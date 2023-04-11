@@ -1,11 +1,11 @@
 #include <Servo.h> //servo library
-Servo myServo; // creamos nuestro Objeto "myServo"
 #include <NewPing.h>
 int Echo = A4;  
 int Trig = A5;  
 int maxDist = 20;
 
-NewPing sonar (A5, A4, maxDist);
+//NewPing sonar (A5, A4, maxDist);
+//Servo myServo; // creamos nuestro Objeto "myServo"
 
 int ENA = 10; 
 int IN1 = 9;
@@ -24,15 +24,15 @@ int ENB = 5;
  * 
  */
 
-// VELOCIDAD
-int velocidad = 120;//150
+// VELOCIDAD Duty Cycle de los motores 0-255
+int velocidad = 80; //120;//150 
 
 // DISTANCIAS
 int distanciaDerecha = 0, distanciaIzquierda = 0, distanciaMitad = 0;
 
 void setup()
 {
-  myServo.attach(3);
+  //myServo.attach(3);
   Serial.begin(9600);
   //pinMode(Echo, INPUT);    
   //pinMode(Trig, OUTPUT); 
@@ -105,7 +105,6 @@ void Run()
   Stop();
   delay(3000);
 
-  
   turnLeft();
   delay(3000);
   Stop();
@@ -120,11 +119,76 @@ void Run()
 // ULTRASONIDO
 int medirDistancia()   
 {
-  return sonar.ping_cm();  
+  //return sonar.ping_cm();  
 } 
+
+void compararDistancia()
+{
+  if(distanciaIzquierda > distanciaDerecha){
+    turnLeft();
+    delay(500);
+    moveForward();
+    delay(600);
+    turnRight();
+    delay(500);
+    moveForward();
+    delay(600);
+    turnRight();
+    delay(400);
+  }
+  else{
+    turnRight();
+    delay(500);
+    moveForward();
+    delay(600);
+    turnLeft();
+    delay(500);
+    moveForward();
+    delay(600);  
+    turnLeft();
+    delay(400);
+  }
+}
+
+
+void chequearLados()
+{
+  Stop();
+  delay(500);
+
+  // Lado Izquierdo
+  for(int i=90; i<=170; i+=5){
+    //myServo.write(i);
+  }
+  delay(1000);
+  //distanciaDerecha = medirDistancia();
+  Serial.print("distanciaDerecha: ");
+  Serial.println(distanciaDerecha);
+  delay(100);
+
+  // Lado Derecho
+  for(int i=170; i>=0; i-=5){
+    //myServo.write(i);
+  }
+  delay(1000);
+  //distanciaIzquierda = medirDistancia();
+  Serial.print("distanciaIzquierda: ");
+  Serial.println(distanciaIzquierda);
+  delay(100);
+
+  //Volver al centro y comparar lados
+  for(int i=0; i<=90; i+=5){
+    //myServo.write(i);
+  }
+  delay(1000);
+  compararDistancia();
+  
+}
+
 
 void loop()
 {
+  //chequearLados();
   /*
   myServo.write(90);//setservo position according to scaled value
   delay(500); 
@@ -134,10 +198,10 @@ void loop()
   Serial.print("distanciaMedia=");
   Serial.println(distanciaMedia);
   #endif*/
-  //delay(3000); 
-  //Run();
-  
-  myServo.write(90); //Rango Servo: 10°-180° 
+  delay(3000); 
+  Run();
+  /*
+  myServo.write(90); //Rango Servo: 10°- 180° 
   delay(500); 
   distanciaMitad = medirDistancia();
   Serial.print("\ndistanciaMitad: ");
@@ -167,6 +231,6 @@ void loop()
     delay(500);
     myServo.write(90);              
     delay(1000);
-  }
+  }*/
 
 }
