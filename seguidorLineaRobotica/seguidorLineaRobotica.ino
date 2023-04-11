@@ -1,47 +1,48 @@
-//www.elegoo.com
-//2016.09.23
-
 #include <Servo.h> //servo library
 Servo myServo; // creamos nuestro Objeto "myServo"
+#include <NewPing.h>
 int Echo = A4;  
-int Trig = A5; 
+int Trig = A5;  
+int maxDist = 20;
 
+NewPing sonar (A5, A4, maxDist);
 
-int ENA=10; 
-int IN1=9;
-int IN2=8;
-int IN3=7;
-int IN4=6;
-int ENB=5; 
+int ENA = 10; 
+int IN1 = 9;
+int IN2 = 8;
+int IN3 = 7;
+int IN4 = 6;
+int ENB = 5;
 
-/* LLANTAS DERECHA
- * IN3
- * IN4
- *   
- * LLANTAS IZQUIERDA 
+/* LLANTAS IZQUIERDA 
  * IN1 
  * IN2 
+ * 
+ * LLANTAS DERECHA
+ * IN3
+ * IN4
+ * 
  */
 
 // VELOCIDAD
 int velocidad = 120;//150
 
 // DISTANCIAS
-int distanciaDerecha = 0, distanciaIzquierda = 0, distanciaMedia = 0;
+int distanciaDerecha = 0, distanciaIzquierda = 0, distanciaMitad = 0;
 
 void setup()
 {
-  myServo.attach(3);// attach servo on pin 3 to servo object
+  myServo.attach(3);
   Serial.begin(9600);
-  pinMode(Echo, INPUT);    
-  pinMode(Trig, OUTPUT); 
+  //pinMode(Echo, INPUT);    
+  //pinMode(Trig, OUTPUT); 
+    
   pinMode(IN1,OUTPUT);
   pinMode(IN2,OUTPUT);
   pinMode(IN3,OUTPUT);
   pinMode(IN4,OUTPUT);
   pinMode(ENA,OUTPUT);
-  pinMode(ENB,OUTPUT);
-   
+  pinMode(ENB,OUTPUT);  
 }
 
 void moveForward()
@@ -58,62 +59,68 @@ void moveForward()
 void moveBackwards()
 {
   analogWrite(ENA,velocidad);
-  analogWrite(ENB,velocidad);  
+  analogWrite(ENB,velocidad);
   digitalWrite(IN1,HIGH);      
-  digitalWrite(IN2,LOW);    // llantas derecha hacia adelante (forward)
-
+  digitalWrite(IN2,LOW);    // llantas derecha hacia atras (backwards)
+  
   digitalWrite(IN3,HIGH);     
-  digitalWrite(IN4,LOW);    // llantas izquierda hacia adelante (forward)
+  digitalWrite(IN4,LOW);    // llantas izquierda hacia atras (backwards)
 
 }
 
-void turnRight(){ //turnRight
-  digitalWrite(IN1, LOW); //Left Motor backword Pin 
-  digitalWrite(IN2, HIGH); //Left Motor forword Pin 
-  digitalWrite(IN3, LOW); //Right Motor forword Pin 
-  digitalWrite(IN4, HIGH); //Right Motor backword Pin 
+void turnRight()
+{
+  analogWrite(ENA,velocidad);
+  analogWrite(ENB,velocidad);
+  digitalWrite(IN1, LOW); 
+  digitalWrite(IN2, HIGH);
+  digitalWrite(IN3, LOW); 
+  digitalWrite(IN4, LOW); 
 }
 
-void turnLeft(){ //turnLeft
-  digitalWrite(IN1, HIGH); //Left Motor backword Pin 
-  digitalWrite(IN2, LOW); //Left Motor forword Pin 
-  digitalWrite(IN3, HIGH); //Right Motor forword Pin 
-  digitalWrite(IN4, LOW); //Right Motor backword Pin 
+void turnLeft()
+{
+  analogWrite(ENA,velocidad);
+  analogWrite(ENB,velocidad);
+  digitalWrite(IN1, LOW); 
+  digitalWrite(IN2, LOW); 
+  digitalWrite(IN3, LOW); 
+  digitalWrite(IN4, HIGH); 
 }
 
 void Stop()
 {
-  analogWrite(ENA,LOW);
-  analogWrite(ENB,LOW);
-  Serial.println("Stop!");
+  analogWrite(ENA, LOW);
+  analogWrite(ENB, LOW);
 } 
 
 void Run()
 {
   moveForward();
-  delay(1000);
+  delay(3000);
   Stop();
-  delay(1000);
+  delay(3000);
   moveBackwards();
-  delay(1000);
+  delay(3000);
   Stop();
-  delay(1000);
+  delay(3000);
+
+  
   turnLeft();
-  delay(1000);
+  delay(3000);
+  Stop();
+  delay(3000);
   turnRight();
-  delay(1000);
+  delay(3000);
+  Stop();
+  delay(3000);
 }
 
-int Distancia()   
+
+// ULTRASONIDO
+int medirDistancia()   
 {
-  digitalWrite(Trig, LOW);   
-  delayMicroseconds(2);
-  digitalWrite(Trig, HIGH);  
-  delayMicroseconds(20);
-  digitalWrite(Trig, LOW);   
-  float Fdistance = pulseIn(Echo, HIGH);  
-  Fdistance= Fdistance/58;       
-  return (int)Fdistance;
+  return sonar.ping_cm();  
 } 
 
 void loop()
@@ -127,5 +134,39 @@ void loop()
   Serial.print("distanciaMedia=");
   Serial.println(distanciaMedia);
   #endif*/
-  moveForward();
+  //delay(3000); 
+  //Run();
+  
+  myServo.write(90); //Rango Servo: 10°-180° 
+  delay(500); 
+  distanciaMitad = medirDistancia();
+  Serial.print("\ndistanciaMitad: ");
+  Serial.println(distanciaMitad);
+  
+  if(distanciaMitad <= 10)
+  {
+    Stop();
+    delay(500);
+    myServo.write(10);
+    delay(1000);      
+    distanciaDerecha = medirDistancia();
+
+    Serial.print("distanciaDerecha: ");
+    Serial.println(distanciaDerecha);
+
+    delay(500);
+    myServo.write(90);              
+    delay(1000);                                                  
+    myServo.write(180);              
+    delay(1000); 
+    distanciaIzquierda = medirDistancia();
+
+    Serial.print("distanciaIzquierda: ");
+    Serial.println(distanciaIzquierda);
+
+    delay(500);
+    myServo.write(90);              
+    delay(1000);
+  }
+
 }
