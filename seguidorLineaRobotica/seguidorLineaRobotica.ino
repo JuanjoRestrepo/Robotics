@@ -1,11 +1,11 @@
-#include <Servo.h> //servo library
 #include <NewPing.h>
 int Echo = A4;  
 int Trig = A5;  
 int maxDist = 20;
+#define servo A1
 
-//NewPing sonar (A5, A4, maxDist);
-//Servo myServo; // creamos nuestro Objeto "myServo"
+NewPing sonar (Trig, Echo, maxDist);
+
 
 int ENA = 10; 
 int IN1 = 9;
@@ -32,17 +32,49 @@ int distanciaDerecha = 0, distanciaIzquierda = 0, distanciaMitad = 0;
 
 void setup()
 {
-  //myServo.attach(3);
+
   Serial.begin(9600);
-  //pinMode(Echo, INPUT);    
-  //pinMode(Trig, OUTPUT); 
+  pinMode(Echo, INPUT);    
+  pinMode(Trig, OUTPUT); 
     
   pinMode(IN1,OUTPUT);
   pinMode(IN2,OUTPUT);
   pinMode(IN3,OUTPUT);
   pinMode(IN4,OUTPUT);
   pinMode(ENA,OUTPUT);
-  pinMode(ENB,OUTPUT);  
+  pinMode(ENB,OUTPUT);
+
+  pinMode(servo, OUTPUT);
+
+  servoPulse(servo, 90);
+}
+
+void servoPulse(int pin, int angle)
+{
+  int pwm = (angle*11) + 500;      // Convert angle to microseconds
+  digitalWrite(pin, HIGH);
+  delayMicroseconds(pwm);
+  digitalWrite(pin, LOW);
+  delay(50); // Refresh cycle of servo
+}
+
+void moveServo()
+{
+  //Rango Servo: 10°- 180° 
+  for (int angle = 90; angle <= 170; angle += 5)  
+  {
+    servoPulse(servo, angle);  
+  }
+  
+  for (int angle = 170; angle >= 0; angle -= 5)  
+  {
+    servoPulse(servo, angle);  
+  }
+  
+  for (int angle = 10; angle <= 90; angle += 5)  
+  {
+    servoPulse(servo, angle);  
+  }
 }
 
 void moveForward()
@@ -94,37 +126,39 @@ void Stop()
   analogWrite(ENB, LOW);
 } 
 
-void Run()
-{
-  moveForward();
-  delay(3000);
-  Stop();
-  delay(3000);
-  moveBackwards();
-  delay(3000);
-  Stop();
-  delay(3000);
-
-  turnLeft();
-  delay(3000);
-  Stop();
-  delay(3000);
-  turnRight();
-  delay(3000);
-  Stop();
-  delay(3000);
-}
-
-
 // ULTRASONIDO
 int medirDistancia()   
 {
-  //return sonar.ping_cm();  
+  return sonar.ping_cm();  
 } 
 
-void compararDistancia()
-{
-  if(distanciaIzquierda > distanciaDerecha){
+
+void checkSide(){
+    Stop();
+    delay(100);
+    for (int angle = 90; angle <= 170; angle += 5)  {
+      servoPulse(servo, angle);  }
+      delay(300);
+      distanciaIzquierda = medirDistancia();
+      Serial.print("Dist Izquierda: ");
+      Serial.println(distanciaIzquierda);
+      delay(100);
+    for (int angle = 170; angle >= 10; angle -= 5)  {
+      servoPulse(servo, angle);  }
+      delay(500);
+      distanciaDerecha = medirDistancia();
+      Serial.print("Dist Derecha: ");
+      Serial.println(distanciaDerecha);
+      delay(100);
+    for (int angle = 10; angle <= 90; angle += 5)  {
+      servoPulse(servo, angle);  }
+      delay(300);
+      compareDistance(distanciaDerecha, distanciaIzquierda);
+}
+
+void compareDistance(int distDer, int distIzq){
+  if(distIzq > distDer)
+  {
     turnLeft();
     delay(500);
     moveForward();
@@ -136,7 +170,8 @@ void compararDistancia()
     turnRight();
     delay(400);
   }
-  else{
+  else
+  {
     turnRight();
     delay(500);
     moveForward();
@@ -150,87 +185,33 @@ void compararDistancia()
   }
 }
 
-
-void chequearLados()
+void Run()
 {
   Stop();
-  delay(500);
-
-  // Lado Izquierdo
-  for(int i=90; i<=170; i+=5){
-    //myServo.write(i);
-  }
-  delay(1000);
-  //distanciaDerecha = medirDistancia();
-  Serial.print("distanciaDerecha: ");
-  Serial.println(distanciaDerecha);
+  delay(3000);
+  distanciaMitad = medirDistancia();
+  Serial.print("Distancia Mitad: ");
+  Serial.println(distanciaMitad);
   delay(100);
-
-  // Lado Derecho
-  for(int i=170; i>=0; i-=5){
-    //myServo.write(i);
+  moveForward();
+  if (distanciaMitad <= 10)
+  {
+    Stop();
+    delay(100);
+    moveBackwards();
+    delay(1500);
+    Stop();
   }
-  delay(1000);
-  //distanciaIzquierda = medirDistancia();
-  Serial.print("distanciaIzquierda: ");
-  Serial.println(distanciaIzquierda);
-  delay(100);
-
-  //Volver al centro y comparar lados
-  for(int i=0; i<=90; i+=5){
-    //myServo.write(i);
+  else
+  {
+    moveForward();
+    delay(5000);
   }
-  delay(1000);
-  compararDistancia();
-  
 }
-
 
 void loop()
 {
-  //chequearLados();
-  /*
-  myServo.write(90);//setservo position according to scaled value
-  delay(500); 
-  distanciaMedia = Distancia();
-
-  #ifdef send
-  Serial.print("distanciaMedia=");
-  Serial.println(distanciaMedia);
-  #endif*/
-  delay(3000); 
-  Run();
-  /*
-  myServo.write(90); //Rango Servo: 10°- 180° 
-  delay(500); 
-  distanciaMitad = medirDistancia();
-  Serial.print("\ndistanciaMitad: ");
-  Serial.println(distanciaMitad);
-  
-  if(distanciaMitad <= 10)
-  {
-    Stop();
-    delay(500);
-    myServo.write(10);
-    delay(1000);      
-    distanciaDerecha = medirDistancia();
-
-    Serial.print("distanciaDerecha: ");
-    Serial.println(distanciaDerecha);
-
-    delay(500);
-    myServo.write(90);              
-    delay(1000);                                                  
-    myServo.write(180);              
-    delay(1000); 
-    distanciaIzquierda = medirDistancia();
-
-    Serial.print("distanciaIzquierda: ");
-    Serial.println(distanciaIzquierda);
-
-    delay(500);
-    myServo.write(90);              
-    delay(1000);
-  }*/
-
+  delay(1000);
+  checkSide();
 }
+
