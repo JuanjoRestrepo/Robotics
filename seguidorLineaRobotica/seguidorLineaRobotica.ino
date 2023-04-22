@@ -1,8 +1,10 @@
 #include <NewPing.h>
 int Echo = A4;  
 int Trig = A5;  
-int maxDist = 20;
+int maxDist = 15;
 #define servo A1
+#define L_S A2 //ir sensor Left
+#define R_S A3 //ir sensor Right
 
 NewPing sonar (Trig, Echo, maxDist);
 
@@ -43,12 +45,56 @@ void setup()
   pinMode(IN4,OUTPUT);
   pinMode(ENA,OUTPUT);
   pinMode(ENB,OUTPUT);
-
+  
   pinMode(servo, OUTPUT);
 
-  servoPulse(servo, 90);
+  //servoPulse(servo, 90);
+  moveServo();
+
+  distanciaMitad = medirDistancia();
+  delay(500);
 }
 
+void loop()
+{
+  delay(1000);
+  distanciaMitad = medirDistancia();
+  Serial.print("Distancia Mitad: ");
+  Serial.println(distanciaMitad);
+
+  // Si el sensor derecho y el sensor izquierdo están en color blanco, 
+  // Sigue adelante moveForward
+  if((digitalRead(R_S) == 0)&&(digitalRead(L_S) == 0))
+  {
+    if(distanciaMitad > maxDist)
+    {
+      moveForward();
+    }
+    else
+    {
+      checkSide();
+    }
+  }
+  //si el sensor derecho es negro y el sensor izquierdo es blanco, 
+  // llamará a la función turnRight
+  else if((digitalRead(R_S) == 1)&&(digitalRead(L_S) == 0))
+  {
+    turnRight();
+  }  
+  
+  //si el sensor derecho es blanco y el sensor izquierdo es negro
+  //llamará a la función turnLeft
+  else if((digitalRead(R_S) == 0)&&(digitalRead(L_S) == 1))
+  {
+    turnLeft();
+  } 
+  delay(10);
+      
+}
+
+
+
+// Enviar Pulsos PWM al servo para moverlo
 void servoPulse(int pin, int angle)
 {
   int pwm = (angle*11) + 500;      // Convert angle to microseconds
@@ -61,22 +107,36 @@ void servoPulse(int pin, int angle)
 void moveServo()
 {
   //Rango Servo: 10°- 180° 
-  for (int angle = 90; angle <= 170; angle += 5)  
+  for (int angle = 90; angle <= 140; angle += 5)  
   {
     servoPulse(servo, angle);  
   }
   
-  for (int angle = 170; angle >= 0; angle -= 5)  
+  for (int angle = 140; angle >= 40; angle -= 5)  
   {
     servoPulse(servo, angle);  
   }
   
-  for (int angle = 10; angle <= 90; angle += 5)  
+  for (int angle = 40; angle <= 90; angle += 5)  
   {
     servoPulse(servo, angle);  
   }
 }
 
+
+// ULTRASONIDO
+int medirDistancia()   
+{
+  //return sonar.ping_cm();
+  digitalWrite(Trig, LOW);
+  delayMicroseconds(2);
+  digitalWrite(Trig, HIGH);
+  delayMicroseconds(10);
+  long time = pulseIn (Echo, HIGH);
+  return time / 29 / 2;  
+} 
+
+// Mover Motores
 void moveForward()
 {
   analogWrite(ENA,velocidad);
@@ -126,31 +186,25 @@ void Stop()
   analogWrite(ENB, LOW);
 } 
 
-// ULTRASONIDO
-int medirDistancia()   
-{
-  return sonar.ping_cm();  
-} 
-
-
+// Chequear Lados y logica
 void checkSide(){
     Stop();
     delay(100);
-    for (int angle = 90; angle <= 170; angle += 5)  {
+    for (int angle = 90; angle <= 150; angle += 5)  {
       servoPulse(servo, angle);  }
       delay(300);
       distanciaIzquierda = medirDistancia();
       Serial.print("Dist Izquierda: ");
       Serial.println(distanciaIzquierda);
       delay(100);
-    for (int angle = 170; angle >= 10; angle -= 5)  {
+    for (int angle = 150; angle >= 30; angle -= 5)  {
       servoPulse(servo, angle);  }
       delay(500);
       distanciaDerecha = medirDistancia();
       Serial.print("Dist Derecha: ");
       Serial.println(distanciaDerecha);
       delay(100);
-    for (int angle = 10; angle <= 90; angle += 5)  {
+    for (int angle = 30; angle <= 90; angle += 5)  {
       servoPulse(servo, angle);  }
       delay(300);
       compareDistance(distanciaDerecha, distanciaIzquierda);
@@ -208,10 +262,3 @@ void Run()
     delay(5000);
   }
 }
-
-void loop()
-{
-  delay(1000);
-  checkSide();
-}
-
