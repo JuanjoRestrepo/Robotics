@@ -2,9 +2,15 @@
 int Echo = A4;  
 int Trig = A5;  
 int maxDist = 15;
-#define servo A1
-#define L_S A2 //ir sensor Left
+#define servo A0
+
+#define L_S A1 //ir sensor Left
+#define C_S A2 //ir sensor center
 #define R_S A3 //ir sensor Right
+
+//#define LT1 digitalRead(11) //left
+//#define LT2 digitalRead(4)
+//#define LT3 digitalRead(2) //right
 
 NewPing sonar (Trig, Echo, maxDist);
 
@@ -36,6 +42,11 @@ void setup()
 {
 
   Serial.begin(9600);
+
+  pinMode(R_S, INPUT); // declare if sensor as input 
+  pinMode(C_S, INPUT); // declare ir sensor as input 
+  pinMode(L_S, INPUT); // declare ir sensor as input
+  
   pinMode(Echo, INPUT);    
   pinMode(Trig, OUTPUT); 
     
@@ -57,10 +68,12 @@ void setup()
 
 void loop()
 {
-  delay(1000);
   distanciaMitad = medirDistancia();
-  Serial.print("Distancia Mitad: ");
-  Serial.println(distanciaMitad);
+  //Serial.print("Distancia Mitad: ");
+  //Serial.println(distanciaMitad);
+
+
+  /*
 
   // Si el sensor derecho y el sensor izquierdo están en color blanco, 
   // Sigue adelante moveForward
@@ -87,9 +100,29 @@ void loop()
   else if((digitalRead(R_S) == 0)&&(digitalRead(L_S) == 1))
   {
     turnLeft();
-  } 
+  } */
+
+  if(digitalRead(C_S)){
+    moveForward();
+    delay(1000);
+    Serial.print("IR Centro: ");
+    Serial.println(digitalRead(C_S));
+  }
+  else if(digitalRead(L_S) ) { 
+    turnLeft();
+    while(digitalRead(L_S));
+    delay(1000);
+    Serial.print("IR Izquierda: ");
+    Serial.println(digitalRead(L_S));                             
+  }   
+  else if(digitalRead(R_S)) {
+    turnRight();
+    while(digitalRead(R_S));
+    delay(1000);
+    Serial.print("IR Derecha: ");  
+    Serial.println(digitalRead(R_S));
+  }
   delay(10);
-      
 }
 
 
