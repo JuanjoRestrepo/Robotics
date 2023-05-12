@@ -36,9 +36,8 @@ while running:
     robot.cinematica(dt)
     graficos.dibujarRobot(robot.x, robot.y, robot.theta)
     nubePuntos = ultrasonido.sensarObstaculo(robot.x, robot.y, robot.theta)
+
     robot.evadirObstaculo(nubePuntos, dt)
     graficos.showDataSensor(nubePuntos)
 
     pygame.display.update()
-
-
