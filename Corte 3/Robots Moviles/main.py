@@ -6,7 +6,8 @@ from robotMovilObstaculos import Entorno, Robot, Ultrasonido
 DIMENSIONES_MAPA = (600, 1200)
 
 # ENVIRONMENT
-graficos = Entorno(DIMENSIONES_MAPA, 'Corte 3\Robots Moviles\DDR.png', 'Corte 3\Robots Moviles\mapa.png')
+#graficos = Entorno(DIMENSIONES_MAPA, 'Corte 3\Robots Moviles\DDR.png', 'Corte 3\Robots Moviles\mapa.png')
+graficos = Entorno(DIMENSIONES_MAPA, '/Users/jorgerestrepo/Desktop/Robotics/Corte 3/Robots Moviles/DDR.png', '/Users/jorgerestrepo/Desktop/Robotics/Corte 3/Robots Moviles/mapa.png')
 
 # Robot
 posInicial = (200, 330)
