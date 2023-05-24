@@ -18,7 +18,7 @@ int carSpeed = 100;
 #define trigger A5 //Trigger pin
 #define servo A0
 
-int Set = 15;
+int Set = 20;
 int distanciaLeft = 0, distanciaForward = 0, distanciaRight = 0; 
 
 void forward(){
@@ -140,7 +140,7 @@ void compararDistancia(int distanciaLeft, int distanciaRight){
     forward();
     delay(100);
     stop();
-    delay(100);
+    delay(1000);
   }
   else
   {
@@ -148,7 +148,7 @@ void compararDistancia(int distanciaLeft, int distanciaRight){
     Serial.print("A la Derecha");
     delay(1000);
     stop();
-    delay(100);
+    delay(1000);
     forward();
     delay(100);
     stop();
@@ -161,20 +161,17 @@ void compararDistancia(int distanciaLeft, int distanciaRight){
     forward();
     delay(500);
     stop();
-    delay(100);
+    delay(10000);
     left();
-    delay(300);
-    forward();
     delay(100);
     stop();
-    delay(100);
+    delay(1000);
   }
 
 }
 
 void checkLado(){
-  stop();
-  delay(100);
+
   for (int angle = 130; angle <= 190; angle += 5)
   {
     servoPulse(servo, angle);  
@@ -199,7 +196,6 @@ void checkLado(){
   }
   delay(300);
   compararDistancia(distanciaLeft, distanciaRight);
-  seguirLinea();
 }
 
 void seguirLinea() {
@@ -229,17 +225,26 @@ void loop(){
   distanciaForward = medirDistancia();
   Serial.print("Dist Forward: ");
   Serial.println(distanciaForward);
-  seguirLinea();
-  if(distanciaForward < Set)
-  {
-    carSpeed = 150;
-    checkLado();
-    Serial.println("Centro Encedido");
-    
-  }
-  else{
-    seguirLinea();
-  }
-
   
+  if(LT_M){
+    forward();
+    Serial.println("Moviendo sobre linea");
+    if(distanciaForward < Set)
+    {
+      stop();
+      Serial.println("OBSTACULO!");
+      delay(100);
+      checkLado();
+    }
+  }
+  else if(LT_R) { 
+    right();
+    //Serial.println("Derecha Encedido");
+    while(LT_R);                           
+  }   
+  else if(LT_L) {
+    left();
+    //Serial.println("Izquierda Encedido");
+    while(LT_L); 
+  }
 }
