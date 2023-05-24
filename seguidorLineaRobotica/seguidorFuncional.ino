@@ -10,14 +10,15 @@
 #define IN3 7
 #define IN4 6
 
-#define carSpeed 95
-//90 //100 //120 //150
+//#define carSpeed 150
+int carSpeed = 100;
+//90 //95 //120 //150
 
 #define echo A4    //Echo pin
 #define trigger A5 //Trigger pin
 #define servo A0
 
-int Set=15;
+int Set = 15;
 int distanciaLeft = 0, distanciaForward = 0, distanciaRight = 0; 
 
 void forward(){
@@ -27,7 +28,7 @@ void forward(){
   digitalWrite(IN2, HIGH);
   digitalWrite(IN3, LOW);
   digitalWrite(IN4, HIGH);
-  Serial.println("go forward!");
+  Serial.println("\ngo forward!");
 }
 
 void back(){
@@ -37,7 +38,7 @@ void back(){
   digitalWrite(IN2, LOW);
   digitalWrite(IN3, HIGH);
   digitalWrite(IN4, LOW);
-  Serial.println("go back!");
+  Serial.println("\ngo back!");
 }
 
 void left(){
@@ -47,7 +48,7 @@ void left(){
   digitalWrite(IN2, HIGH);
   digitalWrite(IN3, LOW);
   digitalWrite(IN4, LOW);
-  Serial.println("go left!");
+  Serial.println("\ngo left!");
 }
 
 void right(){
@@ -57,13 +58,13 @@ void right(){
   digitalWrite(IN2, LOW);
   digitalWrite(IN3, LOW);
   digitalWrite(IN4, HIGH); 
-  Serial.println("go right!");
+  Serial.println("\ngo right!");
 } 
 
 void stop(){
    digitalWrite(ENA, LOW);
    digitalWrite(ENB, LOW);
-   Serial.println("Stop!");
+   Serial.println("\nStop!");
 } 
 
 void setup(){
@@ -91,12 +92,12 @@ void moverServo(){
   {
     servoPulse(servo, angle);  
   }
-  for (int angle = 190; angle >= 70; angle -= 5)  
+  for (int angle = 190; angle >= 60; angle -= 5)  
   {
     servoPulse(servo, angle);  
   }
   
-  for (int angle = 70; angle <= 130; angle += 5)  
+  for (int angle = 60; angle <= 130; angle += 5)  
   {
     servoPulse(servo, angle);  
   }
@@ -113,32 +114,62 @@ long medirDistancia(){
 }
 
 void compararDistancia(int distanciaLeft, int distanciaRight){
+  
   if(distanciaLeft > distanciaRight)
   {
     left();
-    delay(500);
+    Serial.print("A la Derecha");
+    delay(1000);
+    stop();
+    delay(100);
     forward();
-    delay(600);
+    delay(100);
+    stop();
+    delay(100);
     right();
-    delay(500);
+    Serial.print("A la Izquierda");
+    delay(700);
+    stop();
+    delay(100);
     forward();
-    delay(600);
+    delay(500);
+    stop();
+    delay(100);
     right();
-    delay(400);
+    delay(300);
+    forward();
+    delay(100);
+    stop();
+    delay(100);
   }
   else
   {
     right();
-    delay(500);
+    Serial.print("A la Derecha");
+    delay(1000);
+    stop();
+    delay(100);
     forward();
-    delay(600);
+    delay(100);
+    stop();
+    delay(100);
     left();
-    delay(500);
+    Serial.print("A la Izquierda");
+    delay(700);
+    stop();
+    delay(100);
     forward();
-    delay(600);  
+    delay(500);
+    stop();
+    delay(100);
     left();
-    delay(400);
+    delay(300);
+    forward();
+    delay(100);
+    stop();
+    delay(100);
   }
+
 }
 
 void checkLado(){
@@ -151,23 +182,24 @@ void checkLado(){
   delay(300);
   distanciaLeft = medirDistancia();
   Serial.print("Dist Izquierda: ");
-  Serial.println(distanciaRight);
+  Serial.println(distanciaLeft);
   delay(100);
-  for (int angle = 190; angle >= 70; angle -= 5)
+  for (int angle = 190; angle >= 60; angle -= 5)
   {
     servoPulse(servo, angle); 
   }
   delay(500);
   distanciaRight = medirDistancia();
   Serial.print("Dist Derecha: ");
-  Serial.println(distanciaLeft);
+  Serial.println(distanciaRight);
   delay(100);
-  for (int angle = 70; angle <= 130; angle += 5)
+  for (int angle = 60; angle <= 130; angle += 5)
   {
     servoPulse(servo, angle);  
   }
   delay(300);
   compararDistancia(distanciaLeft, distanciaRight);
+  seguirLinea();
 }
 
 void seguirLinea() {
@@ -188,13 +220,26 @@ void seguirLinea() {
 }
 
 void loop(){
-  //right(); YA
-  //left(); YA
+  //right(); //YA
+  //left(); //YA
   // forward(); YA
   // back(); YA
   //seguirLinea(); BIEN
+  carSpeed = 100;
   distanciaForward = medirDistancia();
   Serial.print("Dist Forward: ");
   Serial.println(distanciaForward);
-  checkLado();
+  seguirLinea();
+  if(distanciaForward < Set)
+  {
+    carSpeed = 150;
+    checkLado();
+    Serial.println("Centro Encedido");
+    
+  }
+  else{
+    seguirLinea();
+  }
+
+  
 }
