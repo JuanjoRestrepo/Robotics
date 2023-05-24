@@ -13,6 +13,13 @@
 #define carSpeed 95
 //90 //100 //120 //150
 
+#define echo A4    //Echo pin
+#define trigger A5 //Trigger pin
+#define servo A0
+
+int Set=15;
+int distanciaLeft = 0, distanciaForward = 0, distanciaRight = 0; 
+
 void forward(){
   analogWrite(ENA, carSpeed);
   analogWrite(ENB, carSpeed);
@@ -64,6 +71,103 @@ void setup(){
   pinMode(LT_R,INPUT);
   pinMode(LT_M,INPUT);
   pinMode(LT_L,INPUT);
+  pinMode(echo, INPUT );// declare ultrasonic sensor Echo pin as input
+  pinMode(trigger, OUTPUT); // declare ultrasonic sensor Trigger pin as Output
+  pinMode(servo, OUTPUT);
+
+  moverServo();
+}
+
+void servoPulse (int pin, int angle){
+  int pwm = (angle*11) + 500;      // Convert angle to microseconds
+  digitalWrite(pin, HIGH);
+  delayMicroseconds(pwm);
+  digitalWrite(pin, LOW);
+  delay(50); // Refresh cycle of servo
+}
+
+void moverServo(){
+  for (int angle = 130; angle <= 190; angle += 5)
+  {
+    servoPulse(servo, angle);  
+  }
+  for (int angle = 190; angle >= 70; angle -= 5)  
+  {
+    servoPulse(servo, angle);  
+  }
+  
+  for (int angle = 70; angle <= 130; angle += 5)  
+  {
+    servoPulse(servo, angle);  
+  }
+}
+
+// ================== Ultrasonic_read ==================
+long medirDistancia(){
+  digitalWrite(trigger, LOW);
+  delayMicroseconds(2);
+  digitalWrite(trigger, HIGH);
+  delayMicroseconds(10);
+  long time = pulseIn (echo, HIGH);
+  return time / 29 / 2;
+}
+
+void compararDistancia(int distanciaLeft, int distanciaRight){
+  if(distanciaLeft > distanciaRight)
+  {
+    left();
+    delay(500);
+    forward();
+    delay(600);
+    right();
+    delay(500);
+    forward();
+    delay(600);
+    right();
+    delay(400);
+  }
+  else
+  {
+    right();
+    delay(500);
+    forward();
+    delay(600);
+    left();
+    delay(500);
+    forward();
+    delay(600);  
+    left();
+    delay(400);
+  }
+}
+
+void checkLado(){
+  stop();
+  delay(100);
+  for (int angle = 130; angle <= 190; angle += 5)
+  {
+    servoPulse(servo, angle);  
+  }
+  delay(300);
+  distanciaLeft = medirDistancia();
+  Serial.print("Dist Izquierda: ");
+  Serial.println(distanciaRight);
+  delay(100);
+  for (int angle = 190; angle >= 70; angle -= 5)
+  {
+    servoPulse(servo, angle); 
+  }
+  delay(500);
+  distanciaRight = medirDistancia();
+  Serial.print("Dist Derecha: ");
+  Serial.println(distanciaLeft);
+  delay(100);
+  for (int angle = 70; angle <= 130; angle += 5)
+  {
+    servoPulse(servo, angle);  
+  }
+  delay(300);
+  compararDistancia(distanciaLeft, distanciaRight);
 }
 
 void seguirLinea() {
@@ -88,5 +192,9 @@ void loop(){
   //left(); YA
   // forward(); YA
   // back(); YA
-  seguirLinea();
+  //seguirLinea(); BIEN
+  distanciaForward = medirDistancia();
+  Serial.print("Dist Forward: ");
+  Serial.println(distanciaForward);
+  checkLado();
 }
