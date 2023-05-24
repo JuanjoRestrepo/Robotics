@@ -1,6 +1,5 @@
-//www.elegoo.com
- 
-//Line Tracking IO define
+
+ //Line Tracking IO define
 #define LT_R digitalRead(11)
 #define LT_M digitalRead(4)
 #define LT_L digitalRead(2)
