@@ -114,41 +114,6 @@ long medirDistancia(){
   return time / 29 / 2;
 }
 
-void compararDistancia(int distanciaLeft, int distanciaRight){
-
-  carSpeed = 130;
-  if(distanciaLeft > distanciaRight)
-  {
-    left();
-    Serial.print("A la Izquierda");
-    delay(1500);
-    forward();
-    delay(100);
-    right();
-    delay(1000);
-    stop();
-    delay(10000);
-  }
-  else
-  {
-    right();
-    Serial.print("A la Derecha");
-    delay(1500);
-    forward();
-    delay(100);
-    left();
-    delay(900);
-    forward();
-    delay(500);
-    left();
-    delay(300);
-    right();
-    delay(300);
-    stop();
-    delay(1000);
-  }
-}
-
 void checkLado(){
 
   for (int angle = 130; angle <= 190; angle += 5)
@@ -157,7 +122,7 @@ void checkLado(){
   }
   delay(300);
   distanciaLeft = medirDistancia();
-  Serial.print("Dist Izquierda: ");
+  Serial.print("\nDist Izquierda: ");
   Serial.println(distanciaLeft);
   delay(100);
   for (int angle = 190; angle >= 60; angle -= 5)
@@ -175,6 +140,24 @@ void checkLado(){
   }
   delay(300);
   compararDistancia(distanciaLeft, distanciaRight);
+  Serial.println("Distancias Comparadas Correctamente!");
+  carSpeed = 95;
+}
+
+void compararDistancia(int distanciaLeft, int distanciaRight){
+  carSpeed = 100;
+  if(distanciaLeft > distanciaRight)
+  {
+    left();
+    Serial.print("A la Izquierda");
+    delay(1500);
+    forward();
+    delay(300);
+    right();
+    delay(1000);
+    stop();
+    delay(10000);
+  }
 }
 
 // ================== FOLLOW LINE ==================
@@ -204,11 +187,10 @@ void loop(){
   // forward(); YA
   // back(); YA
   //seguirLinea(); BIEN
-  carSpeed = 95;
   distanciaForward = medirDistancia();
   Serial.print("Dist Forward: ");
   Serial.println(distanciaForward);
-  if(distanciaForward >= Set)
+  if(distanciaForward >= Set || distanciaForward == 0)
   {
     seguirLinea();
   }
@@ -218,9 +200,9 @@ void loop(){
     Serial.print("OBSTACULO A: ");
     Serial.print(distanciaForward);
     Serial.print(" CM");
-    delay(1000);
+    delay(100);
+    checkLado();
     Serial.println("\nSIGO!");
-    //checkLado();
   }
-  carSpeed = 95;
+  
 }
