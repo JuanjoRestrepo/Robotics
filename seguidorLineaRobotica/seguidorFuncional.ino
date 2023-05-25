@@ -11,14 +11,14 @@
 #define IN4 6
 
 //#define carSpeed 150
-int carSpeed = 100;
+int carSpeed = 95;
 //90 //95 //120 //150
 
 #define echo A4    //Echo pin
 #define trigger A5 //Trigger pin
 #define servo A0
 
-int Set = 20;
+int Set = 15;
 int distanciaLeft = 0, distanciaForward = 0, distanciaRight = 0; 
 
 void forward(){
@@ -75,9 +75,10 @@ void setup(){
   pinMode(echo, INPUT );// declare ultrasonic sensor Echo pin as input
   pinMode(trigger, OUTPUT); // declare ultrasonic sensor Trigger pin as Output
   pinMode(servo, OUTPUT);
-
   moverServo();
 }
+
+// ================== SERVO ==================
 
 void servoPulse (int pin, int angle){
   int pwm = (angle*11) + 500;      // Convert angle to microseconds
@@ -103,7 +104,7 @@ void moverServo(){
   }
 }
 
-// ================== Ultrasonic_read ==================
+// ================== ULTRASONIDO ==================
 long medirDistancia(){
   digitalWrite(trigger, LOW);
   delayMicroseconds(2);
@@ -114,60 +115,38 @@ long medirDistancia(){
 }
 
 void compararDistancia(int distanciaLeft, int distanciaRight){
-  
+
+  carSpeed = 130;
   if(distanciaLeft > distanciaRight)
   {
     left();
-    Serial.print("A la Derecha");
-    delay(1000);
-    stop();
-    delay(100);
-    forward();
-    delay(100);
-    stop();
-    delay(100);
-    right();
     Serial.print("A la Izquierda");
-    delay(700);
-    stop();
-    delay(100);
+    delay(1500);
     forward();
-    delay(500);
-    stop();
     delay(100);
     right();
-    delay(300);
-    forward();
-    delay(100);
-    stop();
     delay(1000);
+    stop();
+    delay(10000);
   }
   else
   {
     right();
     Serial.print("A la Derecha");
-    delay(1000);
-    stop();
-    delay(1000);
+    delay(1500);
     forward();
     delay(100);
-    stop();
-    delay(100);
     left();
-    Serial.print("A la Izquierda");
-    delay(700);
-    stop();
-    delay(100);
+    delay(900);
     forward();
     delay(500);
-    stop();
-    delay(10000);
     left();
-    delay(100);
+    delay(300);
+    right();
+    delay(300);
     stop();
     delay(1000);
   }
-
 }
 
 void checkLado(){
@@ -198,6 +177,8 @@ void checkLado(){
   compararDistancia(distanciaLeft, distanciaRight);
 }
 
+// ================== FOLLOW LINE ==================
+
 void seguirLinea() {
   if(LT_M){
     forward();
@@ -215,36 +196,31 @@ void seguirLinea() {
   }
 }
 
+// ================== MAIN LOOP ==================
+
 void loop(){
   //right(); //YA
   //left(); //YA
   // forward(); YA
   // back(); YA
   //seguirLinea(); BIEN
-  carSpeed = 100;
+  carSpeed = 95;
   distanciaForward = medirDistancia();
   Serial.print("Dist Forward: ");
   Serial.println(distanciaForward);
-  
-  if(LT_M){
-    forward();
-    Serial.println("Moviendo sobre linea");
-    if(distanciaForward < Set)
-    {
-      stop();
-      Serial.println("OBSTACULO!");
-      delay(100);
-      checkLado();
-    }
+  if(distanciaForward >= Set)
+  {
+    seguirLinea();
   }
-  else if(LT_R) { 
-    right();
-    //Serial.println("Derecha Encedido");
-    while(LT_R);                           
-  }   
-  else if(LT_L) {
-    left();
-    //Serial.println("Izquierda Encedido");
-    while(LT_L); 
+  else
+  {
+    stop();
+    Serial.print("OBSTACULO A: ");
+    Serial.print(distanciaForward);
+    Serial.print(" CM");
+    delay(1000);
+    Serial.println("\nSIGO!");
+    //checkLado();
   }
+  carSpeed = 95;
 }
