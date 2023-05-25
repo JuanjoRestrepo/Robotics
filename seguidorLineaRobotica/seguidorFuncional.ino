@@ -11,14 +11,14 @@
 #define IN4 6
 
 //#define carSpeed 150
-int carSpeed = 95;
+int carSpeed = 100;
 //90 //95 //120 //150
 
 #define echo A4    //Echo pin
 #define trigger A5 //Trigger pin
 #define servo A0
 
-int Set = 15;
+int maxDist = 15;
 int distanciaLeft = 0, distanciaForward = 0, distanciaRight = 0; 
 
 void forward(){
@@ -67,7 +67,7 @@ void stop(){
    Serial.println("\nStop!");
 } 
 
-void setup(){
+void maxDistup(){
   Serial.begin(9600);
   pinMode(LT_R,INPUT);
   pinMode(LT_M,INPUT);
@@ -184,25 +184,29 @@ void seguirLinea() {
 void loop(){
   //right(); //YA
   //left(); //YA
-  // forward(); YA
-  // back(); YA
-  //seguirLinea(); BIEN
+  // forward(); //YA
+  // back(); //YA
+  seguirLinea(); //BIEN
   distanciaForward = medirDistancia();
   Serial.print("Dist Forward: ");
   Serial.println(distanciaForward);
-  if(distanciaForward >= Set || distanciaForward == 0)
+  if(distanciaForward > maxDist || distanciaForward == 0)
   {
     seguirLinea();
   }
-  else
+  else if (distanciaForward == maxDist)
   {
     stop();
     Serial.print("OBSTACULO A: ");
     Serial.print(distanciaForward);
     Serial.print(" CM");
     delay(100);
-    checkLado();
+    //checkLado();
     Serial.println("\nSIGO!");
+  }
+  else
+  {
+    seguirLinea();
   }
   
 }
