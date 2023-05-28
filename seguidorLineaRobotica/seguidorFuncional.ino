@@ -10,17 +10,16 @@
 #define IN3 7
 #define IN4 6
 
-//#define carSpeed 150
-int carSpeed = 100;
-//90 //95 //120 //150
-
 #define echo A4    //Echo pin
 #define trigger A5 //Trigger pin
 #define servo A0
 
-int maxDist = 15;
-int distanciaLeft = 0, distanciaForward = 0, distanciaRight = 0; 
+#define maxDist 15
 
+int carSpeed = 100;
+int distanciaLeft = 0, distanciaCenter = 0, distanciaRight = 0; 
+
+// ================== DESPLAZAMIENTOS ==================
 void forward(){
   analogWrite(ENA, carSpeed);
   analogWrite(ENB, carSpeed);
@@ -28,7 +27,7 @@ void forward(){
   digitalWrite(IN2, HIGH);
   digitalWrite(IN3, LOW);
   digitalWrite(IN4, HIGH);
-  Serial.println("\ngo forward!");
+  //Serial.println("\ngo forward!");
 }
 
 void back(){
@@ -38,7 +37,7 @@ void back(){
   digitalWrite(IN2, LOW);
   digitalWrite(IN3, HIGH);
   digitalWrite(IN4, LOW);
-  Serial.println("\ngo back!");
+  //Serial.println("\ngo back!");
 }
 
 void left(){
@@ -48,7 +47,7 @@ void left(){
   digitalWrite(IN2, HIGH);
   digitalWrite(IN3, LOW);
   digitalWrite(IN4, LOW);
-  Serial.println("\ngo left!");
+  //Serial.println("\ngo left!");
 }
 
 void right(){
@@ -58,32 +57,20 @@ void right(){
   digitalWrite(IN2, LOW);
   digitalWrite(IN3, LOW);
   digitalWrite(IN4, HIGH); 
-  Serial.println("\ngo right!");
+  //Serial.println("\ngo right!");
 } 
 
 void stop(){
    digitalWrite(ENA, LOW);
    digitalWrite(ENB, LOW);
-   Serial.println("\nStop!");
+   //Serial.println("\nStop!");
 } 
 
-void maxDistup(){
-  Serial.begin(9600);
-  pinMode(LT_R,INPUT);
-  pinMode(LT_M,INPUT);
-  pinMode(LT_L,INPUT);
-  pinMode(echo, INPUT );// declare ultrasonic sensor Echo pin as input
-  pinMode(trigger, OUTPUT); // declare ultrasonic sensor Trigger pin as Output
-  pinMode(servo, OUTPUT);
-  moverServo();
-}
-
 // ================== SERVO ==================
-
 void servoPulse (int pin, int angle){
-  int pwm = (angle*11) + 500;      // Convert angle to microseconds
+  int PWM = (angle * 11) + 500;      // Convert angle to microseconds
   digitalWrite(pin, HIGH);
-  delayMicroseconds(pwm);
+  delayMicroseconds(PWM);
   digitalWrite(pin, LOW);
   delay(50); // Refresh cycle of servo
 }
@@ -114,6 +101,7 @@ long medirDistancia(){
   return time / 29 / 2;
 }
 
+// ================== EVADIR OBSTACULOS ==================
 void checkLado(){
 
   for (int angle = 130; angle <= 190; angle += 5)
@@ -141,11 +129,11 @@ void checkLado(){
   delay(300);
   compararDistancia(distanciaLeft, distanciaRight);
   Serial.println("Distancias Comparadas Correctamente!");
-  carSpeed = 95;
+ 
 }
 
 void compararDistancia(int distanciaLeft, int distanciaRight){
-  carSpeed = 100;
+ 
   if(distanciaLeft > distanciaRight)
   {
     left();
@@ -154,58 +142,66 @@ void compararDistancia(int distanciaLeft, int distanciaRight){
     forward();
     delay(300);
     right();
-    delay(1000);
+    delay(2000);
+    forward();
+    delay(670);
     stop();
-    delay(10000);
+    delay(1000);
   }
 }
 
 // ================== FOLLOW LINE ==================
-
-void seguirLinea() {
+void seguirLinea(){
   if(LT_M){
     forward();
-    Serial.println("Centro Encedido");
   }
   else if(LT_R) { 
     right();
-    Serial.println("Derecha Encedido");
     while(LT_R);                             
   }   
   else if(LT_L) {
     left();
-    Serial.println("Izquierda Encedido");
     while(LT_L);  
   }
 }
 
-// ================== MAIN LOOP ==================
+void setup(){
+  Serial.begin(9600);
+  pinMode(LT_R,INPUT);
+  pinMode(LT_M,INPUT);
+  pinMode(LT_L,INPUT);
+  pinMode(echo, INPUT );// declare ultrasonic sensor Echo pin as input
+  pinMode(trigger, OUTPUT); // declare ultrasonic sensor Trigger pin as Output
+  pinMode(servo, OUTPUT);
+  moverServo();
+}
 
+// ================== MAIN LOOP ==================
 void loop(){
   //right(); //YA
   //left(); //YA
-  // forward(); //YA
+  //forward(); //YA
   // back(); //YA
-  seguirLinea(); //BIEN
-  distanciaForward = medirDistancia();
+  //seguirLinea(); //BIEN
+  
+  distanciaCenter = medirDistancia();
   Serial.print("Dist Forward: ");
-  Serial.println(distanciaForward);
-  if(distanciaForward > maxDist || distanciaForward == 0)
+  Serial.println(distanciaCenter);
+  if(distanciaCenter > maxDist || distanciaCenter == 0)
   {
     seguirLinea();
   }
-  else if (distanciaForward == maxDist)
+  else if(distanciaCenter == maxDist )
   {
     stop();
     Serial.print("OBSTACULO A: ");
-    Serial.print(distanciaForward);
+    Serial.print(distanciaCenter);
     Serial.print(" CM");
-    delay(100);
-    //checkLado();
+    delay(1000);
+    checkLado();
     Serial.println("\nSIGO!");
   }
-  else
-  {
+  else{
     seguirLinea();
   }
   
