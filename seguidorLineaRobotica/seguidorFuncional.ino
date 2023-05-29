@@ -18,6 +18,12 @@
 
 int carSpeed = 100;
 int distanciaLeft = 0, distanciaCenter = 0, distanciaRight = 0; 
+volatile bool lineDetected = false;
+
+// ================== INTERRUPT SERVICE ROUTINE ==================
+void lineInterrupt() {
+  lineDetected = true;
+}
 
 // ================== DESPLAZAMIENTOS ==================
 void forward(){
@@ -76,16 +82,17 @@ void servoPulse (int pin, int angle){
 }
 
 void moverServo(){
-  for (int angle = 130; angle <= 190; angle += 5)
+  
+  for (int angle = 110; angle <= 190; angle += 5)
   {
     servoPulse(servo, angle);  
   }
-  for (int angle = 190; angle >= 60; angle -= 5)  
+  for (int angle = 190; angle >= 30; angle -= 5)  
   {
     servoPulse(servo, angle);  
   }
   
-  for (int angle = 60; angle <= 130; angle += 5)  
+  for (int angle = 30; angle <= 110; angle += 5)  
   {
     servoPulse(servo, angle);  
   }
@@ -102,6 +109,33 @@ long medirDistancia(){
 }
 
 // ================== EVADIR OBSTACULOS ==================
+void evadirObstaculo(){
+ 
+  // Girar hacia la izquierda para rodear el obstáculo
+  left();
+  delay(900);
+
+  // Avanzar para rodear el obstáculo
+  forward();
+  delay(100);
+
+  // Girar hacia la derecha para reorientarse después de rodear el obstáculo
+  right();
+  delay(900);
+
+  // Avanzar hasta encontrar la línea
+  forward();
+  delay(150);
+  //while (!lineDetected); // Esperar a que se detecte la línea
+  //lineDetected = false;
+  
+
+  // Ajustar la posición del robot en la línea (puedes modificar esta parte según tus necesidades)
+  //delay(670);
+  stop();
+  delay(100);
+}
+
 void checkLado(){
 
   for (int angle = 130; angle <= 190; angle += 5)
@@ -127,27 +161,8 @@ void checkLado(){
     servoPulse(servo, angle);  
   }
   delay(300);
-  compararDistancia(distanciaLeft, distanciaRight);
   Serial.println("Distancias Comparadas Correctamente!");
  
-}
-
-void compararDistancia(int distanciaLeft, int distanciaRight){
- 
-  if(distanciaLeft > distanciaRight)
-  {
-    left();
-    Serial.print("A la Izquierda");
-    delay(1500);
-    forward();
-    delay(300);
-    right();
-    delay(2000);
-    forward();
-    delay(670);
-    stop();
-    delay(1000);
-  }
 }
 
 // ================== FOLLOW LINE ==================
@@ -174,6 +189,11 @@ void setup(){
   pinMode(trigger, OUTPUT); // declare ultrasonic sensor Trigger pin as Output
   pinMode(servo, OUTPUT);
   moverServo();
+
+  // Configurar interrupciones para los sensores infrarrojos
+  //attachInterrupt(digitalPinToInterrupt(LT_R), lineInterrupt, CHANGE);
+  //attachInterrupt(digitalPinToInterrupt(LT_M), lineInterrupt, CHANGE);
+  //attachInterrupt(digitalPinToInterrupt(LT_L), lineInterrupt, CHANGE);
 }
 
 // ================== MAIN LOOP ==================
@@ -184,25 +204,25 @@ void loop(){
   // back(); //YA
   //seguirLinea(); //BIEN
   
+  
   distanciaCenter = medirDistancia();
   Serial.print("Dist Forward: ");
   Serial.println(distanciaCenter);
-  if(distanciaCenter > maxDist || distanciaCenter == 0)
-  {
+  
+  if (distanciaCenter > maxDist || distanciaCenter == 0) {
     seguirLinea();
-  }
-  else if(distanciaCenter <= maxDist || distanciaCenter > 0)
-  {
+  } else if (distanciaCenter == maxDist) {
     stop();
     Serial.print("OBSTACULO A: ");
     Serial.print(distanciaCenter);
     Serial.print(" CM");
     delay(1000);
-    //checkLado();
-    //Serial.println("\nSIGO!");
-  }
-  else{
+    evadirObstaculo();
+  } 
+  else {
     seguirLinea();
   }
+  //moverServo();
+  //servoPulse(servo, 90);
   
 }
