@@ -17,18 +17,14 @@
 #define maxDist 15
 
 int carSpeed = 100;
+int straightSpeed = 80;
 int distanciaLeft = 0, distanciaCenter = 0, distanciaRight = 0; 
 volatile bool lineDetected = false;
 
-// ================== INTERRUPT SERVICE ROUTINE ==================
-void lineInterrupt() {
-  lineDetected = true;
-}
-
 // ================== DESPLAZAMIENTOS ==================
 void forward(){
-  analogWrite(ENA, carSpeed);
-  analogWrite(ENB, carSpeed);
+  analogWrite(ENA, straightSpeed);
+  analogWrite(ENB, straightSpeed);
   digitalWrite(IN1, LOW);
   digitalWrite(IN2, HIGH);
   digitalWrite(IN3, LOW);
@@ -110,7 +106,6 @@ long medirDistancia(){
 
 // ================== EVADIR OBSTACULOS ==================
 void evadirObstaculo(){
- 
   // Girar hacia la izquierda para rodear el obstáculo
   left();
   delay(900);
@@ -125,15 +120,12 @@ void evadirObstaculo(){
 
   // Avanzar hasta encontrar la línea
   forward();
-  delay(150);
-  //while (!lineDetected); // Esperar a que se detecte la línea
-  //lineDetected = false;
+  if (LT_R || LT_M || LT_L){
+    stop();
+    delay(100);
+    seguirLinea();
+  }
   
-
-  // Ajustar la posición del robot en la línea (puedes modificar esta parte según tus necesidades)
-  //delay(670);
-  stop();
-  delay(100);
 }
 
 void checkLado(){
@@ -190,10 +182,6 @@ void setup(){
   pinMode(servo, OUTPUT);
   moverServo();
 
-  // Configurar interrupciones para los sensores infrarrojos
-  //attachInterrupt(digitalPinToInterrupt(LT_R), lineInterrupt, CHANGE);
-  //attachInterrupt(digitalPinToInterrupt(LT_M), lineInterrupt, CHANGE);
-  //attachInterrupt(digitalPinToInterrupt(LT_L), lineInterrupt, CHANGE);
 }
 
 // ================== MAIN LOOP ==================
@@ -222,7 +210,5 @@ void loop(){
   else {
     seguirLinea();
   }
-  //moverServo();
-  //servoPulse(servo, 90);
-  
+ 
 }
