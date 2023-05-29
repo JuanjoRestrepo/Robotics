@@ -191,15 +191,15 @@ void loop(){
   {
     seguirLinea();
   }
-  else if(distanciaCenter == maxDist )
+  else if(distanciaCenter <= maxDist || distanciaCenter > 0)
   {
     stop();
     Serial.print("OBSTACULO A: ");
     Serial.print(distanciaCenter);
     Serial.print(" CM");
     delay(1000);
-    checkLado();
-    Serial.println("\nSIGO!");
+    //checkLado();
+    //Serial.println("\nSIGO!");
   }
   else{
     seguirLinea();
