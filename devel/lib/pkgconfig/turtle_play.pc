@@ -1,0 +1,1 @@
+/home/restrenain/catkin_ws/devel/.private/turtle_play/lib/pkgconfig/turtle_play.pc

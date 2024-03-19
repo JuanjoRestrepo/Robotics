@@ -1,0 +1,6 @@
+devel_space: /home/restrenain/catkin_ws/devel
+install: false
+install_space: /home/restrenain/catkin_ws/install
+profile: default
+source_space: /home/restrenain/catkin_ws/src
+workspace: /home/restrenain/catkin_ws
